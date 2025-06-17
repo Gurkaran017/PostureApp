@@ -1,93 +1,46 @@
 
-// import React, {useState, useEffect} from 'react';
-// import {View, Text, StyleSheet} from 'react-native';
-// import {useCameraDevice, Camera} from 'react-native-vision-camera';
-// import {useNavigation} from '@react-navigation/native';
-
-// export default function PoseScreen() {
-//   const [hasPermission, setHasPermission] = useState(null);
-//   const device = useCameraDevice('front'); // back or front
-//   const navigation = useNavigation();
-
-//   useEffect(() => {
-//     (async () => {
-//       const permission = await Camera.requestCameraPermission();
-//       setHasPermission(permission === 'authorized');
-//     })();
-//   }, []);
-
-//   useEffect(() => {
-//     // if (hasPermission && device) {
-//     //   // Navigate once we have permission and a camera
-//     //   navigation.navigate('CameraScreen'); 
-//     //   console.log("entered")
-//     // }
-//     if (hasPermission) {
-//       // Navigate once we have permission and a camera
-//       navigation.navigate('CameraScreen'); 
-//       console.log("entered")
-//     }
-//   }, [hasPermission]);
-
-//   if (hasPermission === null) {
-//     return <View style={styles.container}><Text>Checking for camera...</Text></View>;
-//   }
-//   // if (!device) {
-//   //   return <View style={styles.container}>
-//   //     <Text>Device not found</Text>
-//   //   </View>;
-//   // }
-  
-//   if (hasPermission === false) {
-    
-//     return <View style={styles.container}>
-//       <Text>Camera permission denied</Text>
-//     </View>;
-//   }
-
-  
-//   return (
-//     <View style={styles.container}>
-//       <Text>Setting up camera...</Text>
-//     </View>
-//   )
-// }
-
-// const styles = StyleSheet.create({  
-//   container:{flex:1,alignItems:'center',justifyContent:'center',backgroundColor:'darkcyan'}
-// });
-
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
+import {View, Text, StyleSheet, Alert, Platform, TouchableOpacity} from 'react-native';
 import {useCameraDevice, Camera} from 'react-native-vision-camera';
 import {useNavigation} from '@react-navigation/native';
+import DeviceInfo from 'react-native-device-info';
 
 export default function PoseScreen() {
   const [cameraPermission, setCameraPermission] = useState(null);
-  const [deviceError, setDeviceError] = useState(null);
-  const device = useCameraDevice('front', {
-    physicalDevices: [
-      'ultra-wide-angle-camera',
-      'wide-angle-camera',
-      'telephoto-camera'
-    ]
-  });
+  const [deviceError, setDeviceError] = useState(false);
+  const [isEmulator, setIsEmulator] = useState(false);
+  const device = useCameraDevice('front');
   const navigation = useNavigation();
 
+  // Check if running on emulator
   useEffect(() => {
-    if (cameraPermission === 'granted' && device) {
-      navigation.navigate('CameraScreen');
+    const checkIfEmulator = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const result = await DeviceInfo.isEmulator();
+          setIsEmulator(result);
+        } catch (e) {
+          console.log('Could not check if emulator', e);
+        }
+      }
+    };
+    checkIfEmulator();
+  }, []);
+
+  useEffect(() => {
+    if (cameraPermission === 'granted') {
+      if (device) {
+        navigation.navigate('CameraScreen');
+      } else if (!isEmulator) { // Only show error if not on emulator
+        setDeviceError('No camera device found ji');
+      }
     }
-  }, [cameraPermission, device, navigation]);
+  }, [cameraPermission, device, isEmulator, navigation]);
 
   const requestPermission = async () => {
     try {
       const permission = await Camera.requestCameraPermission();
       setCameraPermission(permission);
-      
-      if (permission === 'authorized' && !device) {
-        setDeviceError('No compatible camera found');
-      }
     } catch (error) {
       console.error('Permission error:', error);
       setCameraPermission('denied');
@@ -98,13 +51,10 @@ export default function PoseScreen() {
     const checkPermission = async () => {
       try {
         const currentPermission = await Camera.getCameraPermissionStatus();
-        console.log("Permission status:", currentPermission);
         setCameraPermission(currentPermission);
         
         if (currentPermission === 'not-determined') {
           requestPermission();
-        } else if (currentPermission === 'authorized' && !device) {
-          setDeviceError('Camera not detected');
         }
       } catch (error) {
         console.error('Check permission error:', error);
@@ -136,7 +86,7 @@ export default function PoseScreen() {
     );
   }
 
-  if (!device || deviceError) {
+  if ((!device || deviceError) && !isEmulator) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>{deviceError || 'No camera device available'}</Text>
@@ -145,12 +95,27 @@ export default function PoseScreen() {
           onPress={() => {
             setDeviceError(null);
             if (cameraPermission === 'authorized') {
-              navigation.replace('PoseScreen'); // Use replace instead of navigate
+              navigation.replace('PoseScreen');
             }
           }}
         >
           Tap to retry
         </Text>
+      </View>
+    );
+  }
+
+  // Special emulator view
+  if (isEmulator) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.emulatorText}>Camera not available in emulator</Text>
+        <TouchableOpacity
+          style={styles.emulatorButton}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <Text style={styles.emulatorButtonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -188,5 +153,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'green',
     padding: 10,
     borderRadius: 5
+  },
+  emulatorText: {
+    color: 'white',
+    fontSize: 18,
+    marginBottom: 20
+  },
+  emulatorButton: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 15,
+    borderRadius: 5,
+    width: '80%',
+    alignItems: 'center'
+  },
+  emulatorButtonText: {
+    color: 'white',
+    fontSize: 16
   }
 });
