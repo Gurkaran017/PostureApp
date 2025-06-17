@@ -19,7 +19,7 @@ export default function HomeScreen({navigation}) {
       <View style={styles.button}>
         <Button
           title="Try It"
-          color="#fff"
+          color="black"
           onPress={() => navigation.navigate('Pose')}
         />
       </View>
