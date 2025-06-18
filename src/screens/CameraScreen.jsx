@@ -103,7 +103,7 @@ export default function CameraScreen() {
     setAnalysis(null);
   };
 
-  if (!device || !hasPermission || isEmulator === null) {
+  if (!device || !hasPermission || isEmulator === null) { //taking permission
     return (
       <View style={styles.container}>
         <Text style={styles.loadingText}>
