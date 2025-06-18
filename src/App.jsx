@@ -12,11 +12,13 @@ import HomeScreen from './screens/HomeScreen';
 import PoseScreen from './screens/PoseScreen';
 import CameraScreen from './screens/CameraScreen';
 import { Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
+    <SafeAreaProvider>
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Splash' screenOptions={{headerShown:false}}>
         <Stack.Screen name='Splash' component={SplashScreen} />
@@ -25,6 +27,7 @@ export default function App() {
         <Stack.Screen name="CameraScreen" component={CameraScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+    </SafeAreaProvider>
     // <Text>
     //   Hello
     // </Text>

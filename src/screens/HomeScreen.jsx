@@ -33,8 +33,8 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Pose')}>
-        <Text style={styles.buttonText}>📷 Capture Image</Text>
-      </TouchableOpacity>
+  <Text style={styles.buttonText}>🧐 Analyze My Photo</Text>
+</TouchableOpacity>
 
       <Text style={styles.footer}>No data is stored. Your photo is analyzed temporarily and privately.</Text>
     </ScrollView>

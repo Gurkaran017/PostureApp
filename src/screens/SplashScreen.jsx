@@ -72,7 +72,7 @@ export default function SplashScreen({ navigation }) {
 
       {/* Fade-in Texts */}
       <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
-        Posture App
+        VisionSnap AI
       </Animated.Text>
       <Animated.Text style={[styles.subtitle, { opacity: fadeAnim }]}>
         Sit. Stand. Correctly.
